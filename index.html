@@ -1,5 +1,4 @@
-<wpp_artifact type="html" identifier="06cccb44-3273-44c3-b3d2-be24b2806860" title="Trapeo Hero index.html" version="1">
-<html data-type="html" data-identifier="9111e5ea-a8fe-4d26-9d14-cd65fa249da5" data-title="Trapeo Hero" data-version="11" width="1024" height="768">
+<html data-type="html" data-identifier="9111e5ea-a8fe-4d26-9d14-cd65fa249da5" data-title="Trapeo Hero" data-version="12" width="1024" height="768">
 <head>
 <meta charset="UTF-8">
 <title>Trapeo Hero - Limpieza Lucha Libre</title>
@@ -11,16 +10,16 @@
   #hud-layer { position: absolute; inset: 0; z-index: 10; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 16px 22px; }
   .hud-top { display: flex; justify-content: space-between; align-items: flex-start; }
   .brand-badge { background: linear-gradient(135deg, rgba(74,20,140,.95), rgba(123,31,162,.95)); border: 2px solid #ffd54f; border-radius: 14px; padding: 8px 18px; box-shadow: 0 4px 20px rgba(0,0,0,.6); display: flex; align-items: center; gap: 12px; }
-   .brand-rainbow {
-  font-weight: 900;
-  font-size: 26px;
-  font-style: italic;
-  background: linear-gradient(90deg, #ff1744, #ffea00, #00e676, #00e5ff, #d500f9);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: 1px;
-}
+  .brand-rainbow {
+    font-weight: 900;
+    font-size: 26px;
+    font-style: italic;
+    background: linear-gradient(90deg, #ff1744, #ffea00, #00e676, #00e5ff, #d500f9);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+  }
   .lives-container { display: flex; gap: 6px; margin-top: 8px; background: rgba(22,5,36,.85); border: 2px solid #ffd54f; padding: 6px 14px; border-radius: 20px; align-items: center; width: fit-content; }
   .life-icon { font-size: 22px; filter: drop-shadow(0 2px 4px rgba(0,0,0,.6)); transition: transform .2s, opacity .2s; }
   .life-icon.lost { opacity: .25; filter: grayscale(1); transform: scale(.85); }
@@ -46,16 +45,15 @@
   #countdown-overlay { position: absolute; inset: 0; background: rgba(10,2,18,.85); backdrop-filter: blur(8px); z-index: 40; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
   #countdown-number { font-size: 140px; font-weight: 900; font-style: italic; color: #ffd54f; text-shadow: 0 0 40px #e040fb, 0 8px 16px rgba(0,0,0,.9); transform: scale(.5); opacity: 0; transition: all .35s cubic-bezier(.175,.885,.32,1.275); letter-spacing: 2px; }
   #countdown-number.show { transform: scale(1.15); opacity: 1; }
-/* En la línea 50 */
-#countdown-number.trapea {
-  font-size: 110px;
-  background: linear-gradient(90deg, #ff1744, #ffea00, #00e676, #00e5ff, #d500f9);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: none;
-  filter: drop-shadow(0 0 30px #e040fb);
-}
+  #countdown-number.trapea {
+    font-size: 110px;
+    background: linear-gradient(90deg, #ff1744, #ffea00, #00e676, #00e5ff, #d500f9);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: none;
+    filter: drop-shadow(0 0 30px #e040fb);
+  }
   .countdown-sub { font-size: 20px; font-weight: 800; color: #f3e5f5; margin-top: 15px; text-transform: uppercase; letter-spacing: 2px; }
   .hud-bottom { display: flex; justify-content: space-between; align-items: flex-end; pointer-events: auto; }
   .lane-key-hints { display: flex; gap: 12px; background: rgba(22,5,36,.88); padding: 7px 16px; border-radius: 20px; border: 1px solid #9c27b0; font-size: 12px; font-weight: bold; }
@@ -130,9 +128,9 @@
         </div>
       </div>
       <div class="hud-stats" style="margin-right:215px;">
-        <div class="stat-card"><p class="stat-label">Puntos</p><div id="score-val" class="stat-val">0</div></div>
-        <div class="stat-card"><p class="stat-label">Racha</p><div id="combo-val" class="stat-val">0 STREAK</div></div>
-        <div class="stat-card"><p class="stat-label">Multiplicador</p><div id="multi-val" class="stat-val">x1</div></div>
+        <div class="stat-card"><p id="stat-label-1" class="stat-label">Puntos</p><div id="score-val" class="stat-val">0</div></div>
+        <div class="stat-card"><p id="stat-label-2" class="stat-label">Racha</p><div id="combo-val" class="stat-val">0 STREAK</div></div>
+        <div class="stat-card"><p id="stat-label-3" class="stat-label">Multiplicador</p><div id="multi-val" class="stat-val">x1</div></div>
       </div>
     </div>
 
@@ -147,22 +145,22 @@
   </div>
 
   <div id="start-screen">
-    <h1 class="modal-title">TRAPEO HERO</h1>
-    <p class="modal-sub">¡Limpia la lona de la lucha libre en 3 carriles! <strong>No necesitas hacer click</strong>: con solo situar el trapeador en el carril cuando pase la mancha se limpiará al instante.</p>
+    <h1 id="h1-title" class="modal-title">TRAPEO HERO</h1>
+    <p id="p-modal-sub" class="modal-sub">¡Limpia la lona de la lucha libre en 3 carriles! <strong>No necesitas hacer click</strong>: con solo situar el trapeador en el carril cuando pase la mancha se limpiará al instante.</p>
 
     <div class="mode-select-box">
       <div id="mode-opt-cam" class="mode-btn active">
         <div class="mode-icon">📷</div>
         <div>
-          <h3 class="mode-title">Modo Cámara (Tracking de Manos)</h3>
-          <p class="mode-desc">Usa tu webcam: desplázate frente a la cámara con los puños en guardia para guiar el trapeador.</p>
+          <h3 id="h3-mode-cam" class="mode-title">Modo Cámara (Tracking de Manos)</h3>
+          <p id="p-mode-cam-desc" class="mode-desc">Usa tu webcam: desplázate frente a la cámara con los puños en guardia para guiar el trapeador.</p>
         </div>
       </div>
       <div id="mode-opt-mouse" class="mode-btn">
         <div class="mode-icon">🖱️</div>
         <div>
-          <h3 class="mode-title">Modo Mouse / Teclado</h3>
-          <p class="mode-desc">Desliza el mouse a los 3 carriles o usa [A, S, D] / [1, 2, 3]. Sin webcam.</p>
+          <h3 id="h3-mode-mouse" class="mode-title">Modo Mouse / Teclado</h3>
+          <p id="p-mode-mouse-desc" class="mode-desc">Desliza el mouse a los 3 carriles o usa [A, S, D] / [1, 2, 3]. Sin webcam.</p>
         </div>
       </div>
     </div>
@@ -177,19 +175,19 @@
     </div>
 
     <div class="features-grid">
-      <div class="feature-card"><span>🧼</span><strong>Sin Clicks</strong><p>Coloca el trapeador en el carril correcto cuando llegue la mancha.</p></div>
-      <div class="feature-card"><span>💧</span><strong>Manchas Largas</strong><p>Mantén el trapeador en el carril hasta terminar el derrame. Si te sales, pierdes 80 puntos.</p></div>
-      <div class="feature-card"><span>⏱️</span><strong>Bonus Cuerdas (10s - 2X)</strong><p>Limpia las cuerdas con la mano abierta. Al regresar tendrás 2 segundos de preparación.</p></div>
+      <div class="feature-card"><span>🧼</span><strong>Sin Clicks</strong><p id="p-feat-1">Coloca el trapeador en el carril correcto cuando llegue la mancha.</p></div>
+      <div class="feature-card"><span>💧</span><strong>Manchas Largas</strong><p id="p-feat-2">Mantén el trapeador en el carril hasta terminar el derrame. Si te sales, pierdes 80 puntos.</p></div>
+      <div class="feature-card"><span>⏱️</span><strong>Bonus Cuerdas (10s - 2X)</strong><p id="p-feat-3">Limpia las cuerdas con la mano abierta. Al regresar tendrás 2 segundos de preparación.</p></div>
     </div>
 
     <button id="btn-play-start" class="big-btn">¡COMENZAR TRAPEO HERO!</button>
   </div>
 
   <div id="game-over-screen">
-    <h2 class="modal-title">¡FIN DEL COMBATE!</h2>
-    <p class="modal-sub">Te quedaste sin vidas en el ring. ¡Hora de perfumar la lona otra vez!</p>
+    <h2 id="h2-game-over" class="modal-title">¡FIN DEL COMBATE!</h2>
+    <p id="p-game-over-sub" class="modal-sub">Te quedaste sin vidas en el ring. ¡Hora de perfumar la lona otra vez!</p>
     <div style="margin:20px 0;">
-      <p style="font-size:14px; text-transform:uppercase; color:#ce93d8;">Puntaje Final</p>
+      <p id="p-final-score-label" style="font-size:14px; text-transform:uppercase; color:#ce93d8;">Puntaje Final</p>
       <div id="final-score" style="font-size:58px; font-weight:900; color:#ffd54f;">0</div>
       <p id="final-streak" style="font-size:18px; color:#00e5ff; margin-top:6px;">Racha Máxima: 0 notas</p>
       <p id="final-rank" style="font-size:18px; color:#e1bee7; margin-top:8px;">Rango: Mozo del Ring</p>
@@ -201,9 +199,9 @@
 <script>
 (() => {
   // ==========================================
-  // ASSETS (carpeta: assets/images y assets/audio)
+  // ASSETS (Rutas reales: carpeta assets/ y audio/)
   // ==========================================
-  const IMG_BASE = 'assets/images/';
+  const IMG_BASE = 'assets/';
   const ASSETS = {
     gameBg: 'game_background.png',
     bonusBg: 'bonus_background.png',
@@ -222,15 +220,15 @@
   });
   const isLoaded = (img) => img && img.complete && img.naturalWidth > 0;
 
-  // Canción principal (assets/audio/cancion.mp3)
-  const songAudio = new Audio('assets/audio/cancion.mp3');
+  // Canción principal real: audio/Tumbado 26_10.mp3
+  const songAudio = new Audio('audio/Tumbado 26_10.mp3');
   songAudio.loop = true;
   songAudio.volume = 0.6;
   let useSynthFallback = false;
   songAudio.addEventListener('error', () => { useSynthFallback = true; });
 
-  // Sonido de error (assets/audio/scratch.mp3); si no existe se genera uno sintético
-  const scratchAudio = new Audio('assets/audio/scratch.mp3');
+  // Sonido de error
+  const scratchAudio = new Audio('audio/scratch.mp3');
   let scratchFileOk = true;
   scratchAudio.addEventListener('error', () => { scratchFileOk = false; });
 
@@ -297,7 +295,6 @@
     }
   }
 
-  // Sonido de rayón / scratch para errores
   function playScratchError() {
     if (scratchFileOk) {
       const a = scratchAudio.cloneNode();
@@ -391,7 +388,7 @@
   // ==========================================
   // STATE
   // ==========================================
-  let gameState = 'START'; // START, COUNTDOWN, PLAYING, BONUS, BONUS_TRANSITION, GAMEOVER
+  let gameState = 'START';
   let selectedControlMode = 'cam';
   let score = 0, streak = 0, maxStreak = 0, multiplier = 1, lives = 3;
   let bonusCharge = 0, bonusDuration = 0, bonusTransitionTimer = 0;
@@ -410,10 +407,11 @@
     openHandPos: { x: 512, y: 380, targetX: 512, targetY: 380 }
   };
 
+  // Cuerdas alineadas con el fondo escalado al 75% y pegado abajo
   const BONUS_ROPES = [
-    { y: 260, dirtSegments: [] },
-    { y: 380, dirtSegments: [] },
-    { y: 500, dirtSegments: [] }
+    { y: 385, dirtSegments: [] },
+    { y: 475, dirtSegments: [] },
+    { y: 565, dirtSegments: [] }
   ];
 
   function getHighwayPoint(laneIndex, progress) {
@@ -538,7 +536,7 @@
   }
 
   // ==========================================
-  // CONTROLS (sin clicks: limpieza automática al pasar por el carril)
+  // CONTROLS (Limpieza automática al pasar por el carril)
   // ==========================================
   function setLane(laneIndex) {
     if (laneIndex < 0 || laneIndex > 2) return;
@@ -652,7 +650,7 @@
   }
 
   // ==========================================
-  // BONUS CUERDAS (10 s) Y REGRESO CON 2 s DE PREPARACIÓN
+  // BONUS CUERDAS (10 s)
   // ==========================================
   function enterBonusMode() {
     gameState = 'BONUS';
@@ -662,9 +660,12 @@
     bonusStatusLabel.textContent = '¡LIMPIA LAS 3 CUERDAS! (10s - 2X)';
     spanControlHint.textContent = '¡MANO ABIERTA Y TRAPO!: pasa la mano por las 3 cuerdas';
 
+    // Rango horizontal distribuido en el ring escalado
     BONUS_ROPES.forEach(r => {
       r.dirtSegments = [];
-      for (let x = 120; x < canvas.width - 120; x += 35) r.dirtSegments.push({ x, cleaned: false });
+      for (let x = 160; x < canvas.width - 160; x += 40) {
+        r.dirtSegments.push({ x, cleaned: false });
+      }
     });
 
     showJudgment('★ BONUS CUERDAS 10s (2X)! ★', '#e040fb');
@@ -1019,40 +1020,40 @@
     });
   }
 
-  // Brazos del jugador siguiendo el carril activo
+  // Brazos del jugador reducidos un 50% (de 620 a 310)
   function drawPlayerArms() {
-    drawSprite(images.armsFab, playerMop.x, canvas.height + 10, 620, true, '#9c27b0');
+    drawSprite(images.armsFab, playerMop.x, canvas.height + 10, 310, true, '#9c27b0');
   }
 
+  // Bonus Cuerdas: fondo 25% más chico pegado abajo, sin líneas artificiales, con manchas de lodo y botella en esquina
   function drawBonusStage() {
+    const bgW = canvas.width * 0.75;
+    const bgH = canvas.height * 0.75;
+    const bgX = (canvas.width - bgW) / 2;
+    const bgY = canvas.height - bgH;
+
+    ctx.fillStyle = '#0b0213';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     if (isLoaded(images.bonusBg)) {
-      ctx.drawImage(images.bonusBg, 0, 0, canvas.width, canvas.height);
-    } else {
-      ctx.fillStyle = '#10031e';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(images.bonusBg, bgX, bgY, bgW, bgH);
     }
 
-    const ropeColors = ['#f44336', '#ffffff', '#1e88e5'];
-    BONUS_ROPES.forEach((rope, idx) => {
-      ctx.strokeStyle = ropeColors[idx];
-      ctx.lineWidth = 22;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(35, rope.y);
-      ctx.lineTo(canvas.width - 35, rope.y);
-      ctx.stroke();
+    // Manchas de lodo en las cuerdas
+    BONUS_ROPES.forEach(rope => {
       rope.dirtSegments.forEach(seg => {
         if (!seg.cleaned) {
-          ctx.fillStyle = '#4e342e';
-          ctx.beginPath();
-          ctx.ellipse(seg.x, rope.y, 18, 14, 0, 0, Math.PI * 2);
-          ctx.fill();
+          drawSprite(images.lodo, seg.x, rope.y, 38, false, '#4e342e');
         }
       });
     });
 
-    drawSprite(images.armsBonusFixed, canvas.width / 2, canvas.height + 10, 560, true, '#9c27b0');
-    drawSprite(images.armsBonusMove, playerMop.openHandPos.x, playerMop.openHandPos.y, 300, false, '#ffffff');
+    // Brazo fijo con botella reducido 80% (150px) en la esquina inferior izquierda
+    const fixedArmWidth = 150;
+    drawSprite(images.armsBonusFixed, fixedArmWidth / 2 + 15, canvas.height + 10, fixedArmWidth, true, '#9c27b0');
+
+    // Mano móvil del jugador con el trapo
+    drawSprite(images.armsBonusMove, playerMop.openHandPos.x, playerMop.openHandPos.y, 240, false, '#ffffff');
   }
 
   function gameLoop(now) {
@@ -1082,4 +1083,3 @@
 </script>
 </body>
 </html>
-</wpp_artifact>

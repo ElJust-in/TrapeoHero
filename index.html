@@ -1,0 +1,2060 @@
+<html data-type="html" data-identifier="cdadb52a-f207-441e-9ad7-be3b7c64a143" data-title="Trapeo Hero - 3 Carriles Lucha Libre" data-version="9" width="1024" height="768"><head>
+<meta charset="UTF-8">
+<title>Trapeo Hero - Limpieza Lucha Libre</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    background-color: #0b0213;
+    color: #fff;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #game-container {
+    position: relative;
+    width: 1024px;
+    height: 768px;
+    background: #08010f;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(171, 71, 188, 0.5);
+    border: 3px solid #ab47bc;
+    border-radius: 14px;
+  }
+
+  canvas#render-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    cursor: crosshair;
+  }
+
+  /* HUD Overlay */
+  #hud-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 16px 22px;
+  }
+
+  .hud-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .brand-badge {
+    background: linear-gradient(135deg, rgba(74, 20, 140, 0.95), rgba(123, 31, 162, 0.95));
+    border: 2px solid #ffd54f;
+    border-radius: 14px;
+    padding: 8px 18px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    backdrop-filter: blur(8px);
+  }
+
+  .brand-rainbow {
+    font-weight: 900;
+    font-size: 26px;
+    font-style: italic;
+    background: linear-gradient(90deg, #ff1744, #ffea00, #00e676, #00e5ff, #d500f9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+  }
+
+  .lives-container {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    background: rgba(22, 5, 36, 0.85);
+    border: 2px solid #ffd54f;
+    padding: 6px 14px;
+    border-radius: 20px;
+    align-items: center;
+    width: fit-content;
+  }
+
+  .life-icon {
+    font-size: 22px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+    transition: transform 0.2s, opacity 0.2s;
+  }
+
+  .life-icon.lost {
+    opacity: 0.25;
+    filter: grayscale(1);
+    transform: scale(0.85);
+  }
+
+  .hud-stats {
+    display: flex;
+    gap: 12px;
+  }
+
+  .stat-card {
+    background: rgba(26, 6, 42, 0.92);
+    border: 2px solid #ba68c8;
+    border-radius: 12px;
+    padding: 6px 14px;
+    text-align: center;
+    min-width: 95px;
+    backdrop-filter: blur(6px);
+  }
+
+  .stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #e1bee7;
+  }
+
+  .stat-val {
+    font-size: 22px;
+    font-weight: 900;
+    color: #ffd54f;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  }
+
+  .bonus-meter-box {
+    margin-top: 8px;
+    background: rgba(20, 4, 34, 0.85);
+    border: 2px solid #e040fb;
+    border-radius: 10px;
+    padding: 5px 12px;
+    width: 270px;
+  }
+
+  .bonus-bar-bg {
+    width: 100%;
+    height: 12px;
+    background: #250734;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 4px;
+    border: 1px solid #7b1fa2;
+  }
+
+  .bonus-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ba68c8, #e040fb, #ffd54f);
+    transition: width 0.15s ease-out;
+  }
+
+  /* STADIUM JUMBOTRON */
+  #jumbotron-wrapper {
+    position: absolute;
+    top: 14px;
+    right: 22px;
+    width: 200px;
+    background: #111;
+    border-radius: 8px;
+    border: 4px solid #37474f;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.9), 0 0 15px rgba(224, 64, 251, 0.4);
+    pointer-events: auto;
+    overflow: hidden;
+    z-index: 15;
+  }
+
+  .jumbotron-header {
+    background: linear-gradient(90deg, #212121, #424242, #212121);
+    border-bottom: 2px solid #ffd54f;
+    padding: 3px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #ffd54f;
+  }
+
+  .jumbotron-live-badge {
+    background: #d50000;
+    color: #fff;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 8px;
+    font-weight: 900;
+    animation: pulseLive 1.2s infinite;
+  }
+
+  @keyframes pulseLive {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .jumbotron-screen {
+    position: relative;
+    width: 100%;
+    height: 130px;
+    background: #050508;
+    overflow: hidden;
+  }
+
+  #webcam-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+    filter: contrast(1.1) brightness(1.05);
+  }
+
+  .jumbotron-screen::after {
+    content: " ";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 2px, transparent 2px, transparent 4px);
+    pointer-events: none;
+  }
+
+  #cam-hand-dot {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    background: #ffd54f;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    pointer-events: none;
+    box-shadow: 0 0 14px #ffd54f;
+    z-index: 5;
+  }
+
+  #cam-status-text {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    font-size: 9px;
+    text-align: center;
+    background: rgba(0,0,0,0.8);
+    color: #ffd54f;
+    padding: 2px 0;
+    font-weight: bold;
+    z-index: 6;
+  }
+
+  .jumbotron-speaker-grill {
+    background: #1c1c1c;
+    height: 8px;
+    background-image: radial-gradient(#333 30%, transparent 35%);
+    background-size: 4px 4px;
+    border-top: 1px solid #333;
+  }
+
+  /* Dynamic Hit Judgment */
+  #judgment-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0;
+    pointer-events: none;
+    font-size: 42px;
+    font-weight: 900;
+    text-align: center;
+    text-transform: uppercase;
+    text-shadow: 0 0 24px rgba(224, 64, 251, 0.9), 0 4px 12px #000;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 25;
+    white-space: nowrap;
+  }
+
+  #judgment-text.active {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+
+  /* Red Miss Flash */
+  #miss-flash {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(244, 67, 54, 0.35);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+    transition: opacity 0.15s ease-out;
+  }
+
+  /* COUNTDOWN OVERLAY (3, 2, 1... TRAPEA!) */
+  #countdown-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 2, 18, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 40;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  #countdown-number {
+    font-size: 140px;
+    font-weight: 900;
+    font-style: italic;
+    color: #ffd54f;
+    text-shadow: 0 0 40px #e040fb, 0 8px 16px rgba(0,0,0,0.9);
+    transform: scale(0.5);
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    letter-spacing: 2px;
+  }
+
+  #countdown-number.show {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+
+  #countdown-number.trapea {
+    font-size: 110px;
+    background: linear-gradient(90deg, #ff1744, #ffea00, #00e676, #00e5ff, #d500f9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: none;
+    filter: drop-shadow(0 0 30px #e040fb);
+  }
+
+  .countdown-sub {
+    font-size: 20px;
+    font-weight: 800;
+    color: #f3e5f5;
+    margin-top: 15px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  }
+
+  /* Bottom Controls */
+  .hud-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: auto;
+  }
+
+  .lane-key-hints {
+    display: flex;
+    gap: 12px;
+    background: rgba(22, 5, 36, 0.88);
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid #9c27b0;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .btn {
+    background: linear-gradient(135deg, #7b1fa2, #ab47bc);
+    border: 2px solid #ffd54f;
+    color: #fff;
+    font-weight: 700;
+    padding: 10px 18px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+    transition: transform 0.15s, background 0.15s;
+  }
+
+  .btn:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #8e24aa, #ba68c8);
+  }
+
+  /* Start & Game Over Modals */
+  #start-screen, #game-over-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(12, 2, 20, 0.95);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+  }
+
+  #game-over-screen {
+    display: none;
+  }
+
+  .modal-title {
+    font-size: 42px;
+    font-weight: 900;
+    color: #ffd54f;
+    text-shadow: 0 0 25px rgba(255, 213, 79, 0.7);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  .modal-sub {
+    font-size: 15px;
+    color: #e1bee7;
+    margin-bottom: 16px;
+    max-width: 720px;
+    line-height: 1.4;
+  }
+
+  /* START MENU MODE SELECTION */
+  .mode-select-box {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    max-width: 760px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .mode-btn {
+    flex: 1;
+    max-width: 340px;
+    background: rgba(30, 8, 48, 0.85);
+    border: 2px solid #7b1fa2;
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #f3e5f5;
+  }
+
+  .mode-btn:hover {
+    border-color: #ffd54f;
+    background: rgba(58, 16, 92, 0.9);
+    transform: translateY(-2px);
+  }
+
+  .mode-btn.active {
+    border-color: #ffd54f;
+    background: linear-gradient(135deg, rgba(123, 31, 162, 0.9), rgba(74, 20, 140, 0.95));
+    box-shadow: 0 0 20px rgba(255, 213, 79, 0.35);
+  }
+
+  .mode-icon {
+    font-size: 32px;
+  }
+
+  .mode-title {
+    font-size: 15px;
+    font-weight: 900;
+    color: #ffd54f;
+    margin-bottom: 2px;
+  }
+
+  .mode-desc {
+    font-size: 11px;
+    color: #e1bee7;
+    line-height: 1.3;
+  }
+
+  /* MENU WEBCAM PREVIEW / STATUS STRIP */
+  #menu-cam-preview-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(22, 5, 36, 0.88);
+    border: 2px solid #ba68c8;
+    border-radius: 12px;
+    padding: 8px 16px;
+    margin-bottom: 16px;
+    max-width: 700px;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .cam-status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #ffd54f;
+  }
+
+  .cam-preview-mini {
+    width: 75px;
+    height: 50px;
+    background: #000;
+    border: 1px solid #ffd54f;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  #menu-mini-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+    max-width: 760px;
+  }
+
+  .feature-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid #9c27b0;
+    border-radius: 12px;
+    padding: 10px 10px;
+    font-size: 12px;
+    color: #f3e5f5;
+  }
+
+  .feature-card span {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .big-btn {
+    font-size: 20px;
+    padding: 14px 44px;
+    border-radius: 40px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #9c27b0, #e040fb);
+    color: #fff;
+    border: 3px solid #ffd54f;
+    cursor: pointer;
+    box-shadow: 0 0 25px rgba(224, 64, 251, 0.6);
+    transition: transform 0.2s;
+  }
+
+  .big-btn:hover {
+    transform: scale(1.06);
+  }
+</style>
+</head>
+<body>
+
+<div id="game-container">
+  <!-- Red Flash on Miss -->
+  <div id="miss-flash"></div>
+
+  <!-- Main Game Canvas -->
+  <canvas id="render-canvas" width="1024" height="768"></canvas>
+
+  <!-- Countdown Overlay (3, 2, 1... TRAPEA!) -->
+  <div id="countdown-overlay">
+    <div id="countdown-number">3</div>
+    <p id="p-countdown-sub" class="countdown-sub">¡Prepárate con los puños en guardia!</p>
+  </div>
+
+  <!-- Stadium Jumbotron Screen (Visible in menu and in-game) -->
+  <div id="jumbotron-wrapper">
+    <div class="jumbotron-header">
+      <span class="jumbotron-live-badge">● EN VIVO</span>
+      <span id="jumbotron-mode-title">TRAPEO HERO</span>
+      <span style="font-size:8px; color:#ba68c8;">CAM-01</span>
+    </div>
+    <div class="jumbotron-screen">
+      <video id="webcam-video" autoplay="" playsinline="" muted=""></video>
+      <div id="cam-hand-dot"></div>
+      <div id="cam-status-text">Iniciando cámara...</div>
+    </div>
+    <div class="jumbotron-speaker-grill"></div>
+  </div>
+
+  <!-- HUD Layer -->
+  <div id="hud-layer">
+    <div class="hud-top">
+      <div>
+        <div class="brand-badge">
+          <div class="brand-rainbow">TRAPEO HERO</div>
+          <span style="font-size: 12px; font-weight: bold; color: #ffd54f; border-left: 2px solid rgba(255,255,255,0.3); padding-left: 8px;">FABULOSO 3X</span>
+        </div>
+
+        <!-- 3 Lives -->
+        <div class="lives-container">
+          <span style="font-size: 11px; font-weight: 800; color: #e1bee7; margin-right: 4px;">VIDAS:</span>
+          <span id="life-1" class="life-icon">💜</span>
+          <span id="life-2" class="life-icon">💜</span>
+          <span id="life-3" class="life-icon">💜</span>
+        </div>
+
+        <div class="bonus-meter-box">
+          <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700;">
+            <span id="bonus-status-label" style="color:#e1bee7;">BONUS CUERDAS (10s - 2X)</span>
+            <span id="bonus-percent-text" style="color:#ffd54f;">0%</span>
+          </div>
+          <div class="bonus-bar-bg">
+            <div id="bonus-bar-fill" class="bonus-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats shifted to leave room for Jumbotron -->
+      <div class="hud-stats" style="margin-right: 215px;">
+        <div class="stat-card">
+          <p id="p-score-label" class="stat-label">Puntos</p>
+          <div id="score-val" class="stat-val">0</div>
+        </div>
+        <div class="stat-card">
+          <p id="p-combo-label" class="stat-label">Racha</p>
+          <div id="combo-val" class="stat-val">0 STREAK</div>
+        </div>
+        <div class="stat-card">
+          <p id="p-multi-label" class="stat-label">Multiplicador</p>
+          <div id="multi-val" class="stat-val" style="color:#ffd54f;">x1</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Judgment Flash -->
+    <div id="judgment-text">PERFECT!</div>
+
+    <div class="hud-bottom">
+      <div style="display:flex; gap:12px; align-items:center;">
+        <button id="btn-toggle-cam" class="btn">
+          <span>📷</span> Encender / Apagar Cámara
+        </button>
+        <div class="lane-key-hints">
+          <span id="span-control-hint">Automático: Con solo mover el trapeador al carril de la mancha se limpia (Sin clicks)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Start Screen with Mode Selection and Camera Auto-Start -->
+  <div id="start-screen">
+    <h1 id="h1-title" class="modal-title">TRAPEO HERO</h1>
+    <p id="p-desc" class="modal-sub">
+      ¡Limpia la lona de la lucha libre en 3 carriles! <strong>No necesitas hacer click</strong>: con solo situar el trapeador en el carril cuando pase la mancha se limpiará al instante.
+    </p>
+
+    <!-- Mode Selector Cards -->
+    <div class="mode-select-box">
+      <div id="mode-opt-cam" class="mode-btn active">
+        <div class="mode-icon">📷</div>
+        <div>
+          <h3 id="h3-mode-cam" class="mode-title">Modo Cámara (Tracking de Manos)</h3>
+          <p id="p-mode-cam-desc" class="mode-desc">Usa tu webcam en vivo: desplázate frente a la cámara con los puños en guardia para guiar el trapeador.</p>
+        </div>
+      </div>
+
+      <div id="mode-opt-mouse" class="mode-btn">
+        <div class="mode-icon">🖱️</div>
+        <div>
+          <h3 id="h3-mode-mouse" class="mode-title">Modo Mouse / Teclado</h3>
+          <p id="p-mode-mouse-desc" class="mode-desc">Desliza el mouse a los 3 carriles o usa [A, S, D] / [1, 2, 3]. Suave, preciso y sin webcam.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menu Camera Preview Strip -->
+    <div id="menu-cam-preview-bar">
+      <div class="cam-status-pill">
+        <span id="menu-cam-dot">🟢</span>
+        <span id="menu-cam-status-msg">Cámara encendida desde el menú</span>
+      </div>
+      <div class="cam-preview-mini">
+        <video id="menu-mini-video" autoplay="" playsinline="" muted=""></video>
+      </div>
+      <span style="font-size:11px; color:#e1bee7;">Pruébate moviendo los puños para ver el sensor en el Jumbotron</span>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <span>🧼</span>
+        <strong>Sin Clicks</strong>
+        <p id="p-feat-1">Solo coloca el trapeador en el carril correcto cuando llegue la mancha para absorberla.</p>
+      </div>
+      <div class="feature-card">
+        <span>💧</span>
+        <strong>Manchas Largas</strong>
+        <p id="p-feat-2">Mantén el trapeador en el carril hasta terminar el derrame. Si te sales antes, pierdes 80 puntos.</p>
+      </div>
+      <div class="feature-card">
+        <span>⏱️</span>
+        <strong>Bonus Cuerdas (10s - 2X)</strong>
+        <p id="p-feat-3">Limpia las cuerdas con mano abierta. Al regresar tendrás 2 segundos de preparación.</p>
+      </div>
+    </div>
+
+    <button id="btn-play-start" class="big-btn">¡COMENZAR TRAPEO HERO!</button>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div id="game-over-screen">
+    <h2 id="h2-game-over" class="modal-title">¡FIN DEL COMBATE!</h2>
+    <p id="p-final-sub" class="modal-sub">Te quedaste sin vidas en el ring. ¡Hora de perfumar la lona otra vez!</p>
+    <div style="margin: 20px 0;">
+      <p id="p-final-score-title" style="font-size:14px; text-transform:uppercase; color:#ce93d8;">Puntaje Final</p>
+      <div id="final-score" style="font-size:58px; font-weight:900; color:#ffd54f;">0</div>
+      <p id="final-streak" style="font-size:18px; color:#00e5ff; margin-top:6px;">Racha Máxima: 0 notas</p>
+      <p id="final-rank" style="font-size:18px; color:#e1bee7; margin-top:8px;">Rango: Campeón de la Lona Reluciente</p>
+    </div>
+    <button id="btn-restart" class="big-btn">¡REINTENTAR TRAPEO HERO!</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  // Web Audio Synthesizer
+  let audioCtx = null;
+  let beatTimer = null;
+  let bpm = 124;
+  let beatStep = 0;
+
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  }
+
+  function startMusicTrack() {
+    if (beatTimer) clearInterval(beatTimer);
+    const intervalMs = (60 / bpm / 2) * 1000;
+    beatTimer = setInterval(() => {
+      if (gameState === 'PLAYING' || gameState === 'BONUS') {
+        playBeatStep(beatStep);
+        beatStep++;
+      }
+    }, intervalMs);
+  }
+
+  function stopMusicTrack() {
+    if (beatTimer) clearInterval(beatTimer);
+  }
+
+  function playBeatStep(step) {
+    if (!audioCtx) return;
+    const t = audioCtx.currentTime;
+    const mod = step % 8;
+
+    if (mod === 0 || mod === 4) {
+      const kickOsc = audioCtx.createOscillator();
+      const kickGain = audioCtx.createGain();
+      kickOsc.type = 'sine';
+      kickOsc.frequency.setValueAtTime(gameState === 'BONUS' ? 160 : 135, t);
+      kickOsc.frequency.exponentialRampToValueAtTime(38, t + 0.12);
+      kickGain.gain.setValueAtTime(0.35, t);
+      kickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+      kickOsc.connect(kickGain);
+      kickGain.connect(audioCtx.destination);
+      kickOsc.start(t);
+      kickOsc.stop(t + 0.12);
+    }
+
+    if (mod % 2 === 1) {
+      const hatOsc = audioCtx.createOscillator();
+      const hatGain = audioCtx.createGain();
+      hatOsc.type = 'triangle';
+      hatOsc.frequency.setValueAtTime(4500, t);
+      hatGain.gain.setValueAtTime(0.08, t);
+      hatGain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+      hatOsc.connect(hatGain);
+      hatGain.connect(audioCtx.destination);
+      hatOsc.start(t);
+      hatOsc.stop(t + 0.05);
+    }
+
+    const bassNotes = [110, 110, 130.81, 146.83, 164.81, 146.83, 130.81, 98];
+    if (mod % 2 === 0) {
+      const bassOsc = audioCtx.createOscillator();
+      const bassGain = audioCtx.createGain();
+      bassOsc.type = 'sawtooth';
+      bassOsc.frequency.setValueAtTime(bassNotes[mod] * (gameState === 'BONUS' ? 1.25 : 1), t);
+      bassGain.gain.setValueAtTime(0.12, t);
+      bassGain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      bassOsc.connect(bassGain);
+      bassGain.connect(audioCtx.destination);
+      bassOsc.start(t);
+      bassOsc.stop(t + 0.18);
+    }
+  }
+
+  function playHitFX(type) {
+    if (!audioCtx) return;
+    try {
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'countdownTick') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(700, t);
+        osc.frequency.exponentialRampToValueAtTime(950, t + 0.08);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        osc.start(t);
+        osc.stop(t + 0.15);
+      } else if (type === 'countdownGo') {
+        [523.25, 659.25, 1046.5, 1318.51].forEach((f, i) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(f, t + i * 0.04);
+          g.gain.setValueAtTime(0.2, t + i * 0.04);
+          g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.04 + 0.4);
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.start(t + i * 0.04);
+          o.stop(t + i * 0.04 + 0.4);
+        });
+      } else if (type === 'clean') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, t);
+        osc.frequency.exponentialRampToValueAtTime(1046.5, t + 0.09);
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        osc.start(t);
+        osc.stop(t + 0.15);
+      } else if (type === 'scrub') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(320 + Math.random() * 200, t);
+        osc.frequency.linearRampToValueAtTime(600 + Math.random() * 200, t + 0.06);
+        gain.gain.setValueAtTime(0.14, t);
+        gain.gain.linearRampToValueAtTime(0.001, t + 0.06);
+        osc.start(t);
+        osc.stop(t + 0.06);
+      } else if (type === 'bonusEnter') {
+        [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(freq, t + i * 0.06);
+          g.gain.setValueAtTime(0.16, t + i * 0.06);
+          g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.35);
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.start(t + i * 0.06);
+          o.stop(t + i * 0.06 + 0.35);
+        });
+      } else if (type === 'ropeWipe') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800 + Math.random() * 400, t);
+        osc.frequency.exponentialRampToValueAtTime(1600, t + 0.08);
+        gain.gain.setValueAtTime(0.18, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+        osc.start(t);
+        osc.stop(t + 0.12);
+      } else if (type === 'miss') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, t);
+        osc.frequency.exponentialRampToValueAtTime(45, t + 0.22);
+        gain.gain.setValueAtTime(0.24, t);
+        gain.gain.linearRampToValueAtTime(0.001, t + 0.22);
+        osc.start(t);
+        osc.stop(t + 0.22);
+      } else if (type === 'incompletePenalty') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, t);
+        osc.frequency.setValueAtTime(160, t + 0.08);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        osc.start(t);
+        osc.stop(t + 0.25);
+      }
+    } catch(e) {}
+  }
+
+  // DOM Elements
+  const canvas = document.getElementById('render-canvas');
+  const ctx = canvas.getContext('2d');
+  const scoreVal = document.getElementById('score-val');
+  const comboVal = document.getElementById('combo-val');
+  const multiVal = document.getElementById('multi-val');
+  const bonusBarFill = document.getElementById('bonus-bar-fill');
+  const bonusPercentText = document.getElementById('bonus-percent-text');
+  const bonusStatusLabel = document.getElementById('bonus-status-label');
+  const judgmentText = document.getElementById('judgment-text');
+  const missFlash = document.getElementById('miss-flash');
+  const startScreen = document.getElementById('start-screen');
+  const gameOverScreen = document.getElementById('game-over-screen');
+  const btnPlayStart = document.getElementById('btn-play-start');
+  const btnRestart = document.getElementById('btn-restart');
+  const btnToggleCam = document.getElementById('btn-toggle-cam');
+  const videoElem = document.getElementById('webcam-video');
+  const menuMiniVideo = document.getElementById('menu-mini-video');
+  const camHandDot = document.getElementById('cam-hand-dot');
+  const camStatusText = document.getElementById('cam-status-text');
+  const menuCamDot = document.getElementById('menu-cam-dot');
+  const menuCamStatusMsg = document.getElementById('menu-cam-status-msg');
+  const modeOptCam = document.getElementById('mode-opt-cam');
+  const modeOptMouse = document.getElementById('mode-opt-mouse');
+  const jumbotronModeTitle = document.getElementById('jumbotron-mode-title');
+  const spanControlHint = document.getElementById('span-control-hint');
+  const finalScoreEl = document.getElementById('final-score');
+  const finalStreakEl = document.getElementById('final-streak');
+  const finalRankEl = document.getElementById('final-rank');
+  const lifeIcons = [document.getElementById('life-1'), document.getElementById('life-2'), document.getElementById('life-3')];
+
+  // Countdown Elements
+  const countdownOverlay = document.getElementById('countdown-overlay');
+  const countdownNumber = document.getElementById('countdown-number');
+  const countdownSub = document.getElementById('p-countdown-sub');
+
+  // Game Engine State
+  let gameState = 'START'; // START, COUNTDOWN, PLAYING, BONUS, BONUS_TRANSITION, GAMEOVER
+  let selectedControlMode = 'cam'; // 'cam' or 'mouse'
+  let score = 0;
+  let streak = 0;
+  let maxStreak = 0;
+  let multiplier = 1;
+  let lives = 3;
+  let bonusCharge = 0;
+  let bonusDuration = 0;
+  let bonusTransitionTimer = 0; // 2 seconds delay on return from bonus
+  let lastTime = performance.now();
+
+  const highwayTopY = 220;
+  const highwayBottomY = 640;
+  const highwayTopWidth = 240;
+  const highwayBottomWidth = 620;
+
+  function getHighwayPoint(laneIndex, progress) {
+    const curve = Math.pow(progress, 1.4);
+    const y = highwayTopY + curve * (highwayBottomY - highwayTopY);
+    const width = highwayTopWidth + curve * (highwayBottomWidth - highwayTopWidth);
+    const centerX = canvas.width / 2;
+    const laneOffset = (laneIndex - 1) * (width / 3);
+    const x = centerX + laneOffset;
+    const scale = 0.45 + curve * 0.75;
+    return { x, y, scale };
+  }
+
+  let activeNotes = [];
+  let noteSpawnTimer = 0;
+
+  const playerMop = {
+    currentLane: 1,
+    targetLane: 1,
+    x: 512,
+    y: highwayBottomY,
+    activeLaneProgress: [0, 0, 0],
+    handPose: 'closed',
+    openHandPos: { x: 512, y: 380, targetX: 512, targetY: 380 }
+  };
+
+  const BONUS_ROPES = [
+    { id: 0, y: 260, name: 'Cuerda Superior', dirtSegments: [] },
+    { id: 1, y: 380, name: 'Cuerda Media', dirtSegments: [] },
+    { id: 2, y: 500, name: 'Cuerda Inferior', dirtSegments: [] }
+  ];
+
+  let particles = [];
+  let foamSplashes = [];
+
+  // Webcam Tracking Engine
+  let cameraActive = false;
+  let camStream = null;
+  const camCanvas = document.createElement('canvas');
+  const camCtx = camCanvas.getContext('2d', { willReadFrequently: true });
+  camCanvas.width = 160;
+  camCanvas.height = 120;
+  let prevCamFrame = null;
+
+  async function startCamera() {
+    if (cameraActive) return;
+    try {
+      camStatusText.textContent = "Conectando al Jumbotron...";
+      menuCamStatusMsg.textContent = "Conectando cámara...";
+      menuCamDot.textContent = "🟡";
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 320, height: 240, facingMode: 'user' },
+        audio: false
+      });
+      camStream = stream;
+      videoElem.srcObject = stream;
+      menuMiniVideo.srcObject = stream;
+      cameraActive = true;
+
+      camStatusText.textContent = "★ EN VIVO: Mueve tu mano ★";
+      menuCamStatusMsg.textContent = "Cámara encendida y calibrada";
+      menuCamDot.textContent = "🟢";
+      btnToggleCam.innerHTML = "<span>🛑</span> Apagar Cámara";
+      camHandDot.style.display = 'block';
+    } catch (err) {
+      console.warn("Camera could not start:", err);
+      camStatusText.textContent = "Cámara desactivada";
+      menuCamStatusMsg.textContent = "Cámara no disponible (Usa modo Mouse)";
+      menuCamDot.textContent = "🔴";
+      cameraActive = false;
+      selectControlMode('mouse');
+    }
+  }
+
+  function stopCamera() {
+    if (camStream) {
+      camStream.getTracks().forEach(t => t.stop());
+      camStream = null;
+    }
+    cameraActive = false;
+    videoElem.srcObject = null;
+    menuMiniVideo.srcObject = null;
+    camStatusText.textContent = "Jumbotron en pausa";
+    menuCamStatusMsg.textContent = "Cámara apagada (Modo Mouse)";
+    menuCamDot.textContent = "⚪";
+    btnToggleCam.innerHTML = "<span>📷</span> Encender Cámara";
+    camHandDot.style.display = 'none';
+  }
+
+  function toggleCamera() {
+    if (cameraActive) {
+      stopCamera();
+    } else {
+      startCamera();
+    }
+  }
+
+  function selectControlMode(mode) {
+    selectedControlMode = mode;
+    if (mode === 'cam') {
+      modeOptCam.classList.add('active');
+      modeOptMouse.classList.remove('active');
+      spanControlHint.textContent = 'Modo Cámara: Desplaza tus puños en el aire para situar el trapeador (Sin clicks)';
+      startCamera();
+    } else {
+      modeOptMouse.classList.add('active');
+      modeOptCam.classList.remove('active');
+      spanControlHint.textContent = 'Modo Mouse: Mueve el cursor a cada carril para situar el trapeador automáticamente (Sin clicks)';
+      stopCamera();
+    }
+  }
+
+  modeOptCam.addEventListener('click', () => selectControlMode('cam'));
+  modeOptMouse.addEventListener('click', () => selectControlMode('mouse'));
+
+  function processWebcamFrame() {
+    if (!cameraActive || videoElem.readyState < 2) return;
+
+    camCtx.drawImage(videoElem, 0, 0, camCanvas.width, camCanvas.height);
+    const frame = camCtx.getImageData(0, 0, camCanvas.width, camCanvas.height);
+    const data = frame.data;
+
+    if (!prevCamFrame) {
+      prevCamFrame = new Uint8Array(data.length);
+      prevCamFrame.set(data);
+      return;
+    }
+
+    let sumX = 0, sumY = 0, motionCount = 0;
+    const threshold = 34;
+
+    for (let y = 10; y < camCanvas.height - 10; y += 3) {
+      for (let x = 10; x < camCanvas.width - 10; x += 3) {
+        const i = (y * camCanvas.width + x) * 4;
+        const diff = (Math.abs(data[i] - prevCamFrame[i]) +
+                      Math.abs(data[i+1] - prevCamFrame[i+1]) +
+                      Math.abs(data[i+2] - prevCamFrame[i+2])) / 3;
+
+        if (diff > threshold) {
+          const mirroredX = (camCanvas.width - x);
+          sumX += mirroredX;
+          sumY += y;
+          motionCount++;
+        }
+      }
+    }
+
+    prevCamFrame.set(data);
+
+    if (motionCount > 20) {
+      const avgX = sumX / motionCount;
+      const avgY = sumY / motionCount;
+
+      camHandDot.style.left = (avgX / camCanvas.width * 100) + '%';
+      camHandDot.style.top = (avgY / camCanvas.height * 100) + '%';
+
+      if (selectedControlMode === 'cam') {
+        if (gameState === 'PLAYING' || gameState === 'COUNTDOWN' || gameState === 'START' || gameState === 'BONUS_TRANSITION') {
+          const normX = avgX / camCanvas.width;
+          let targetLane = 1;
+          if (normX < 0.38) targetLane = 0;
+          else if (normX > 0.62) targetLane = 2;
+          else targetLane = 1;
+
+          if (targetLane !== playerMop.currentLane) {
+            setLane(targetLane);
+          }
+        } else if (gameState === 'BONUS') {
+          playerMop.openHandPos.targetX = (avgX / camCanvas.width) * canvas.width;
+          playerMop.openHandPos.targetY = (avgY / camCanvas.height) * canvas.height;
+        }
+      }
+    }
+  }
+
+  // AUTOMATIC CLEANING ON LANE PRESENCE (NO CLICK REQUIRED)
+  function setLane(laneIndex) {
+    if (laneIndex < 0 || laneIndex > 2) return;
+    playerMop.currentLane = laneIndex;
+    playerMop.activeLaneProgress[laneIndex] = 1.0;
+
+    // Check immediately upon entering the lane if there is already a stain in the hit zone
+    checkInstantLaneArrivalCleaning(laneIndex);
+  }
+
+  function checkInstantLaneArrivalCleaning(laneIndex) {
+    if (gameState !== 'PLAYING') return;
+
+    for (let i = 0; i < activeNotes.length; i++) {
+      const note = activeNotes[i];
+      if (!note.cleared && note.lane === laneIndex) {
+        if (!note.isLong) {
+          // If a single stain is in the hit window, clean it automatically
+          if (note.progress >= 0.82 && note.progress <= 1.18) {
+            note.cleared = true;
+            handleSuccessClean(note);
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (gameState === 'PLAYING' || gameState === 'COUNTDOWN' || gameState === 'BONUS_TRANSITION') {
+      const k = e.key.toLowerCase();
+      if (k === 'a' || k === '1' || k === 'arrowleft') setLane(0);
+      else if (k === 's' || k === '2' || k === 'arrowdown') setLane(1);
+      else if (k === 'd' || k === '3' || k === 'arrowright') setLane(2);
+    }
+  });
+
+  // Mouse movement: smooth automatic lane steering (no click needed)
+  canvas.addEventListener('mousemove', (e) => {
+    if (selectedControlMode === 'mouse' || gameState === 'BONUS') {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      if (gameState === 'PLAYING' || gameState === 'COUNTDOWN' || gameState === 'START' || gameState === 'BONUS_TRANSITION') {
+        const normX = x / rect.width;
+        let target = 1;
+        if (normX < 0.38) target = 0;
+        else if (normX > 0.62) target = 2;
+        if (target !== playerMop.currentLane) {
+          setLane(target);
+        }
+      } else if (gameState === 'BONUS') {
+        playerMop.openHandPos.targetX = x;
+        playerMop.openHandPos.targetY = y;
+      }
+    }
+  });
+
+  function showJudgment(text, color = '#ffd54f') {
+    judgmentText.textContent = text;
+    judgmentText.style.color = color;
+    judgmentText.classList.remove('active');
+    void judgmentText.offsetWidth;
+    judgmentText.classList.add('active');
+    setTimeout(() => {
+      judgmentText.classList.remove('active');
+    }, 550);
+  }
+
+  function updateLivesDisplay() {
+    lifeIcons.forEach((icon, i) => {
+      if (i < lives) {
+        icon.classList.remove('lost');
+      } else {
+        icon.classList.add('lost');
+      }
+    });
+  }
+
+  function triggerMiss() {
+    streak = 0;
+    multiplier = 1;
+    lives--;
+    updateLivesDisplay();
+
+    missFlash.style.opacity = '1';
+    setTimeout(() => { missFlash.style.opacity = '0'; }, 200);
+
+    comboVal.textContent = '0 STREAK';
+    multiVal.textContent = 'x1';
+    showJudgment('¡MANCHADO! -1 VIDA 💔', '#f44336');
+    playHitFX('miss');
+
+    if (lives <= 0) {
+      endGame();
+    }
+  }
+
+  // Penalty if a sustained long stain is abandoned before finishing
+  function triggerIncompletePenalty() {
+    streak = 0;
+    multiplier = 1;
+    score = Math.max(0, score - 80);
+    scoreVal.textContent = score;
+    comboVal.textContent = '0 STREAK';
+    multiVal.textContent = 'x1';
+
+    showJudgment('¡INCOMPLETO! -80 PTS ⚠️', '#ff9800');
+    playHitFX('incompletePenalty');
+  }
+
+  function handleSuccessClean(note) {
+    streak++;
+    if (streak > maxStreak) maxStreak = streak;
+
+    if (streak >= 30) multiplier = 10;
+    else if (streak >= 20) multiplier = 5;
+    else if (streak >= 10) multiplier = 3;
+    else if (streak >= 5) multiplier = 2;
+    else multiplier = 1;
+
+    const basePoints = note.isLong ? 320 : 150;
+    score += basePoints * multiplier;
+
+    scoreVal.textContent = score;
+    comboVal.textContent = streak + ' STREAK';
+    multiVal.textContent = 'x' + multiplier;
+
+    bonusCharge = Math.min(100, bonusCharge + (note.isLong ? 12 : 7));
+    bonusBarFill.style.width = bonusCharge + '%';
+    bonusPercentText.textContent = Math.round(bonusCharge) + '%';
+
+    spawnHitSparkles(note.lane);
+    playHitFX(note.isLong ? 'scrub' : 'clean');
+
+    const labels = {
+      pisadas: '¡PISADA LIMPIA! 👟',
+      derrame: '¡DERRAME COMPLETO! 💧',
+      lodo: '¡LODO DISUELTO! 🧼',
+      mancha: '¡MANCHA ELIMINADA! ✨'
+    };
+    showJudgment(labels[note.shape] || '¡LIMPIO CON FABULOSO!', '#ffd54f');
+
+    if (bonusCharge >= 100) {
+      enterBonusMode();
+    }
+  }
+
+  // ENTER BONUS STAGE: 10 SECONDS OF ROPE WIPING WITH OPEN HAND (2X POINTS)
+  function enterBonusMode() {
+    gameState = 'BONUS';
+    bonusDuration = 10; // Exactly 10 seconds
+    bonusCharge = 100;
+    playerMop.handPose = 'open';
+
+    jumbotronModeTitle.textContent = '★ BONUS CUERDAS (10s) ★';
+    bonusStatusLabel.textContent = '¡LIMPIA LAS 3 CUERDAS! (10s - 2X)';
+    spanControlHint.textContent = '¡MANO ABIERTA Y TRAPO!: Pasa la mano por las 3 cuerdas para limpiarlas de lado a lado';
+
+    BONUS_ROPES.forEach(r => {
+      r.dirtSegments = [];
+      for (let x = 120; x < canvas.width - 120; x += 35) {
+        r.dirtSegments.push({ x: x, cleaned: false });
+      }
+    });
+
+    showJudgment('★ BONUS CUERDAS 10s (2X)! ★', '#e040fb');
+    playHitFX('bonusEnter');
+  }
+
+  // EXIT BONUS WITH A 2-SECOND GRACE PERIOD BEFORE STAINS ARRIVE
+  function exitBonusMode() {
+    gameState = 'BONUS_TRANSITION';
+    bonusTransitionTimer = 2.0; // 2 seconds to prepare and switch hands back
+    bonusCharge = 0;
+    bonusBarFill.style.width = '0%';
+    bonusPercentText.textContent = '0%';
+    playerMop.handPose = 'closed';
+
+    // Clear notes currently close to the bottom so player doesn't get ambushed
+    activeNotes = activeNotes.filter(n => n.progress < 0.2);
+    noteSpawnTimer = -1.5; // Delay spawning new notes for 1.5s
+
+    jumbotronModeTitle.textContent = 'TRAPEO HERO';
+    bonusStatusLabel.textContent = 'BONUS CUERDAS (10s - 2X)';
+    spanControlHint.textContent = '¡EN GUARDIA!: Trapeador listo en los 3 carriles (Automático sin clicks)';
+
+    showJudgment('¡PREPÁRATE EN GUARDIA! 🥊', '#ffd54f');
+    playHitFX('countdownTick');
+  }
+
+  function spawnHitSparkles(laneIndex, count = 14) {
+    const pt = getHighwayPoint(laneIndex, 1.0);
+    for (let i = 0; i < count; i++) {
+      const ang = Math.random() * Math.PI * 2;
+      const spd = 2 + Math.random() * 6;
+      particles.push({
+        x: pt.x,
+        y: pt.y,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd - 3,
+        r: 4 + Math.random() * 8,
+        color: '#e040fb',
+        alpha: 1.0,
+        decay: 0.03 + Math.random() * 0.04
+      });
+    }
+
+    foamSplashes.push({
+      x: pt.x,
+      y: pt.y,
+      radius: 44 + Math.random() * 16,
+      alpha: 1.0,
+      color: 'rgba(224, 64, 251, 0.45)'
+    });
+  }
+
+  function updateNoteSpawner(dt) {
+    noteSpawnTimer += dt;
+    const spawnRate = 0.76;
+
+    if (noteSpawnTimer > spawnRate) {
+      noteSpawnTimer = 0;
+      const lane = Math.floor(Math.random() * 3);
+      const isLong = Math.random() < 0.32;
+      const shapes = ['pisadas', 'derrame', 'lodo', 'mancha'];
+      const shape = isLong ? 'derrame' : shapes[Math.floor(Math.random() * shapes.length)];
+
+      activeNotes.push({
+        lane: lane,
+        shape: shape,
+        isLong: isLong,
+        progress: 0,
+        length: isLong ? 0.36 : 0,
+        cleanedProgress: 0,
+        abandonedPenalized: false,
+        cleared: false
+      });
+    }
+  }
+
+  function launchCountdown() {
+    initAudio();
+    gameState = 'COUNTDOWN';
+    startScreen.style.display = 'none';
+    gameOverScreen.style.display = 'none';
+
+    score = 0;
+    streak = 0;
+    maxStreak = 0;
+    multiplier = 1;
+    lives = 3;
+    bonusCharge = 0;
+    activeNotes = [];
+    particles = [];
+    foamSplashes = [];
+
+    scoreVal.textContent = '0';
+    comboVal.textContent = '0 STREAK';
+    multiVal.textContent = 'x1';
+    bonusBarFill.style.width = '0%';
+    bonusPercentText.textContent = '0%';
+    updateLivesDisplay();
+
+    countdownOverlay.style.display = 'flex';
+    countdownNumber.className = '';
+    countdownNumber.textContent = '3';
+    countdownSub.textContent = '¡Ponte en guardia con los puños arriba!';
+    void countdownNumber.offsetWidth;
+    countdownNumber.classList.add('show');
+    playHitFX('countdownTick');
+
+    setTimeout(() => {
+      countdownNumber.classList.remove('show');
+      void countdownNumber.offsetWidth;
+      countdownNumber.textContent = '2';
+      countdownSub.textContent = selectedControlMode === 'cam' ? '¡Verifica tus puños en el Jumbotron!' : '¡Mueve tu mouse por los 3 carriles!';
+      countdownNumber.classList.add('show');
+      playHitFX('countdownTick');
+    }, 1000);
+
+    setTimeout(() => {
+      countdownNumber.classList.remove('show');
+      void countdownNumber.offsetWidth;
+      countdownNumber.textContent = '1';
+      countdownSub.textContent = '¡No necesitas clicks, solo colocar el trapeador!';
+      countdownNumber.classList.add('show');
+      playHitFX('countdownTick');
+    }, 2000);
+
+    setTimeout(() => {
+      countdownNumber.classList.remove('show');
+      void countdownNumber.offsetWidth;
+      countdownNumber.textContent = '¡TRAPEA!';
+      countdownNumber.classList.add('trapea');
+      countdownSub.textContent = '★ ¡DEJA LA LONA RELUCIENTE! ★';
+      countdownNumber.classList.add('show');
+      playHitFX('countdownGo');
+    }, 3000);
+
+    setTimeout(() => {
+      countdownOverlay.style.display = 'none';
+      startActiveGame();
+    }, 3800);
+  }
+
+  function startActiveGame() {
+    gameState = 'PLAYING';
+    startMusicTrack();
+  }
+
+  function endGame() {
+    gameState = 'GAMEOVER';
+    stopMusicTrack();
+    gameOverScreen.style.display = 'flex';
+    finalScoreEl.textContent = score;
+    finalStreakEl.textContent = 'Racha Máxima: ' + maxStreak + ' notas';
+
+    let rank = 'Mozo del Ring';
+    if (score > 15000) rank = '👑 CAMPEÓN ABSOLUTO DE TRAPEO HERO';
+    else if (score > 8000) rank = '🥊 MAESTRO DEL TRAPEADOR FABULOSO';
+    else if (score > 4000) rank = '⚡ DEFENSOR DE LA LONA LIMPIA';
+    finalRankEl.textContent = rank;
+  }
+
+  btnPlayStart.addEventListener('click', launchCountdown);
+  btnRestart.addEventListener('click', launchCountdown);
+  btnToggleCam.addEventListener('click', toggleCamera);
+
+  function update(dt) {
+    if (gameState === 'START' || gameState === 'GAMEOVER') {
+      processWebcamFrame();
+      return;
+    }
+
+    if (gameState === 'COUNTDOWN') {
+      const targetPt = getHighwayPoint(playerMop.currentLane, 1.0);
+      playerMop.x += (targetPt.x - playerMop.x) * 0.28;
+      processWebcamFrame();
+      return;
+    }
+
+    // TRANSITION GRACE PERIOD RETURNING FROM BONUS
+    if (gameState === 'BONUS_TRANSITION') {
+      bonusTransitionTimer -= dt;
+      const targetPt = getHighwayPoint(playerMop.currentLane, 1.0);
+      playerMop.x += (targetPt.x - playerMop.x) * 0.28;
+
+      if (bonusTransitionTimer <= 0) {
+        gameState = 'PLAYING';
+        showJudgment('¡A TRAPEAR! ✨', '#ffd54f');
+      }
+      processWebcamFrame();
+      return;
+    }
+
+    if (gameState === 'BONUS') {
+      bonusDuration -= dt;
+      bonusPercentText.textContent = Math.ceil(bonusDuration) + 's';
+      bonusBarFill.style.width = (bonusDuration / 10) * 100 + '%';
+
+      playerMop.openHandPos.x += (playerMop.openHandPos.targetX - playerMop.openHandPos.x) * 0.28;
+      playerMop.openHandPos.y += (playerMop.openHandPos.targetY - playerMop.openHandPos.y) * 0.28;
+
+      const handX = playerMop.openHandPos.x;
+      const handY = playerMop.openHandPos.y;
+
+      let allCleaned = true;
+      BONUS_ROPES.forEach(rope => {
+        const distY = Math.abs(handY - rope.y);
+        if (distY < 45) {
+          rope.dirtSegments.forEach(seg => {
+            if (!seg.cleaned && Math.abs(handX - seg.x) < 40) {
+              seg.cleaned = true;
+              score += 60 * 2;
+              scoreVal.textContent = score;
+              playHitFX('ropeWipe');
+
+              particles.push({
+                x: seg.x,
+                y: rope.y,
+                vx: (Math.random() - 0.5) * 4,
+                vy: (Math.random() - 0.5) * 4,
+                r: 4 + Math.random() * 5,
+                color: '#ffffff',
+                alpha: 1.0,
+                decay: 0.04
+              });
+            }
+          });
+        }
+
+        if (rope.dirtSegments.some(s => !s.cleaned)) {
+          allCleaned = false;
+        }
+      });
+
+      if (allCleaned || bonusDuration <= 0) {
+        if (allCleaned) {
+          score += 2000;
+          scoreVal.textContent = score;
+        }
+        exitBonusMode();
+      }
+
+    } else if (gameState === 'PLAYING') {
+      const targetPt = getHighwayPoint(playerMop.currentLane, 1.0);
+      playerMop.x += (targetPt.x - playerMop.x) * 0.28;
+
+      updateNoteSpawner(dt);
+
+      const noteSpeed = 0.52;
+      for (let i = activeNotes.length - 1; i >= 0; i--) {
+        const note = activeNotes[i];
+        note.progress += noteSpeed * dt;
+
+        if (note.isLong) {
+          // SUSTAINED LONG STAIN: Automatically mopped as long as the mop is in the lane!
+          const inHitZone = (note.progress - note.length <= 1.08 && note.progress >= 0.85);
+
+          if (!note.cleared && inHitZone) {
+            if (playerMop.currentLane === note.lane) {
+              // Actively mopping long stain automatically (NO CLICK)
+              note.cleanedProgress += dt * 2.3;
+              score += Math.round(15 * multiplier);
+              scoreVal.textContent = score;
+              spawnHitSparkles(note.lane, 2);
+
+              if (note.cleanedProgress >= 1.0) {
+                note.cleared = true;
+                handleSuccessClean(note);
+              }
+            } else if (note.cleanedProgress > 0.08 && !note.abandonedPenalized) {
+              // Player abandoned long stain early: LOSE POINTS!
+              note.abandonedPenalized = true;
+              triggerIncompletePenalty();
+            }
+          }
+
+          // If long stain passed completely without full cleaning
+          if (note.progress - note.length > 1.15 && !note.cleared) {
+            if (!note.abandonedPenalized) {
+              if (note.cleanedProgress > 0) {
+                triggerIncompletePenalty();
+              } else {
+                triggerMiss();
+              }
+            }
+            activeNotes.splice(i, 1);
+            continue;
+          }
+
+        } else {
+          // REGULAR SINGLE STAIN: AUTOMATIC CLEANING WHEN MOP IS IN THE LANE (NO CLICK REQUIRED)
+          if (!note.cleared && playerMop.currentLane === note.lane) {
+            if (note.progress >= 0.84 && note.progress <= 1.16) {
+              note.cleared = true;
+              handleSuccessClean(note);
+            }
+          }
+
+          if (note.progress > 1.18 && !note.cleared) {
+            triggerMiss();
+            activeNotes.splice(i, 1);
+            continue;
+          }
+        }
+
+        if (note.progress > 1.45 || (note.cleared && (note.progress - note.length > 1.15))) {
+          activeNotes.splice(i, 1);
+        }
+      }
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha -= p.decay;
+      if (p.alpha <= 0) particles.splice(i, 1);
+    }
+
+    for (let i = foamSplashes.length - 1; i >= 0; i--) {
+      const f = foamSplashes[i];
+      f.alpha -= dt * 0.8;
+      if (f.alpha <= 0) foamSplashes.splice(i, 1);
+    }
+
+    processWebcamFrame();
+  }
+
+  // DRAW FUNCTIONS
+  function drawStadiumEnvironment() {
+    const bg = ctx.createLinearGradient(0, 0, 0, highwayTopY);
+    bg.addColorStop(0, '#05010a');
+    bg.addColorStop(0.7, '#1b062b');
+    bg.addColorStop(1, '#2d0c45');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, canvas.width, highwayTopY + 20);
+
+    const spotX = [180, 420, 680];
+    spotX.forEach((sx) => {
+      const grad = ctx.createRadialGradient(sx, 50, 5, sx, 160, 140);
+      grad.addColorStop(0, 'rgba(255,255,255,0.7)');
+      grad.addColorStop(0.3, gameState === 'BONUS' ? 'rgba(224,64,251,0.35)' : 'rgba(124,77,255,0.2)');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(sx, 50, 28, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    if (gameState !== 'BONUS') {
+      const ropeColors = ['#f44336', '#ffffff', '#1e88e5'];
+      for (let r = 0; r < 3; r++) {
+        ctx.strokeStyle = ropeColors[r];
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(40, highwayTopY - 45 + r * 18);
+        ctx.lineTo(canvas.width - 40, highwayTopY - 45 + r * 18);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function drawCleanCanvasHighway() {
+    ctx.save();
+
+    const pTL = getHighwayPoint(0, 0);
+    const pTR = getHighwayPoint(2, 0);
+    const pBR = getHighwayPoint(2, 1.15);
+    const pBL = getHighwayPoint(0, 1.15);
+
+    ctx.beginPath();
+    ctx.moveTo(pTL.x - 45, pTL.y);
+    ctx.lineTo(pTR.x + 45, pTR.y);
+    ctx.lineTo(pBR.x + 75, pBR.y);
+    ctx.lineTo(pBL.x - 75, pBL.y);
+    ctx.closePath();
+
+    const hwGrad = ctx.createLinearGradient(0, highwayTopY, 0, highwayBottomY);
+    hwGrad.addColorStop(0, '#e8eaf6');
+    hwGrad.addColorStop(0.6, '#ede7f6');
+    hwGrad.addColorStop(1, '#d1c4e9');
+    ctx.fillStyle = hwGrad;
+    ctx.fill();
+
+    ctx.strokeStyle = '#4a148c';
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(106, 27, 154, 0.28)';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([8, 8]);
+
+    [-0.5, 0.5].forEach(dividerOffset => {
+      ctx.beginPath();
+      for (let p = 0; p <= 1.15; p += 0.05) {
+        const curve = Math.pow(p, 1.4);
+        const y = highwayTopY + curve * (highwayBottomY - highwayTopY);
+        const width = highwayTopWidth + curve * (highwayBottomWidth - highwayTopWidth);
+        const x = (canvas.width / 2) + dividerOffset * (width / 3);
+        if (p === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    for (let lane = 0; lane < 3; lane++) {
+      const pt = getHighwayPoint(lane, 1.0);
+      ctx.save();
+      ctx.translate(pt.x, pt.y);
+      ctx.scale(1.2, 0.55);
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 48, 0, Math.PI * 2);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#7b1fa2';
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 36, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(123, 31, 162, 0.12)';
+      ctx.fill();
+
+      if (playerMop.currentLane === lane) {
+        ctx.beginPath();
+        ctx.arc(0, 0, 56, 0, Math.PI * 2);
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#ffd54f';
+        ctx.shadowColor = '#ffd54f';
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+
+  function drawHighwayNotes() {
+    activeNotes.forEach(note => {
+      if (note.cleared) return;
+
+      const pt = getHighwayPoint(note.lane, note.progress);
+
+      // 1. Draw Sustained Long Trail (Derrame Largo) with Cleaning Mask
+      if (note.isLong) {
+        ctx.save();
+        const startProg = Math.max(0, note.progress - note.length);
+        const endProg = note.progress - (note.length * (note.cleanedProgress || 0));
+
+        if (endProg > startProg) {
+          ctx.beginPath();
+          for (let p = startProg; p <= endProg; p += 0.05) {
+            const ptCurve = getHighwayPoint(note.lane, p);
+            if (p === startProg) ctx.moveTo(ptCurve.x, ptCurve.y);
+            else ctx.lineTo(ptCurve.x, ptCurve.y);
+          }
+
+          ctx.strokeStyle = '#6a1b9a';
+          ctx.lineWidth = 32 * getHighwayPoint(note.lane, endProg).scale;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+
+          ctx.strokeStyle = '#ab47bc';
+          ctx.lineWidth = 14 * getHighwayPoint(note.lane, endProg).scale;
+          ctx.stroke();
+
+          const midPt = getHighwayPoint(note.lane, (startProg + endProg) / 2);
+          ctx.font = '900 12px sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'center';
+          ctx.fillText('¡MANTÉN EL TRAPEADOR! 💧', midPt.x, midPt.y);
+        }
+
+        ctx.restore();
+      }
+
+      // 2. Draw Note Head
+      if (!note.isLong || (note.cleanedProgress || 0) < 0.9) {
+        ctx.save();
+        ctx.translate(pt.x, pt.y);
+        ctx.scale(pt.scale, pt.scale);
+
+        if (note.shape === 'pisadas') {
+          ctx.fillStyle = '#422518';
+          [-12, 12].forEach((offsetX, idx) => {
+            ctx.save();
+            ctx.translate(offsetX, (idx === 0 ? -6 : 6));
+            ctx.rotate(idx === 0 ? -0.15 : 0.15);
+            ctx.beginPath();
+            ctx.ellipse(0, -10, 8, 14, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(0, 12, 7, 7, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          });
+        } else if (note.shape === 'derrame') {
+          ctx.fillStyle = '#880e4f';
+          ctx.beginPath();
+          ctx.moveTo(-24, -10);
+          ctx.bezierCurveTo(-30, 15, -10, 28, 0, 20);
+          ctx.bezierCurveTo(15, 26, 32, 12, 22, -12);
+          ctx.bezierCurveTo(10, -28, -15, -24, -24, -10);
+          ctx.closePath();
+          ctx.fill();
+        } else if (note.shape === 'lodo') {
+          ctx.fillStyle = '#3e2723';
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 26, 16, 0.2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#5d4037';
+          ctx.beginPath();
+          ctx.ellipse(-6, -3, 16, 10, -0.3, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = '#4e342e';
+          ctx.beginPath();
+          ctx.arc(0, 0, 18, 0, Math.PI * 2);
+          ctx.fill();
+          for (let a = 0; a < 6; a++) {
+            const ang = (a / 6) * Math.PI * 2;
+            const dist = 22 + Math.sin(a * 2) * 6;
+            ctx.beginPath();
+            ctx.arc(Math.cos(ang) * dist, Math.sin(ang) * dist, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        ctx.restore();
+      }
+    });
+  }
+
+  function drawBonusRopesStage() {
+    ctx.save();
+    ctx.fillStyle = '#10031e';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#212121';
+    ctx.fillRect(20, 180, 28, 420);
+    ctx.fillRect(canvas.width - 48, 180, 28, 420);
+
+    const ropeColors = ['#f44336', '#ffffff', '#1e88e5'];
+    BONUS_ROPES.forEach((rope, idx) => {
+      ctx.strokeStyle = ropeColors[idx];
+      ctx.lineWidth = 22;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(35, rope.y);
+      ctx.lineTo(canvas.width - 35, rope.y);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(35, rope.y + 12);
+      ctx.lineTo(canvas.width - 35, rope.y + 12);
+      ctx.stroke();
+
+      rope.dirtSegments.forEach(seg => {
+        if (!seg.cleaned) {
+          ctx.fillStyle = '#4e342e';
+          ctx.beginPath();
+          ctx.ellipse(seg.x, rope.y, 18, 14, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#3e2723';
+          ctx.beginPath();
+          ctx.arc(seg.x, rope.y, 10, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+    });
+
+    const hx = playerMop.openHandPos.x;
+    const hy = playerMop.openHandPos.y;
+
+    ctx.strokeStyle = '#9c27b0';
+    ctx.lineWidth = 54;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(hx + 180, canvas.height + 40);
+    ctx.quadraticCurveTo(hx + 90, hy + 120, hx + 30, hy + 30);
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(hx + 38, hy + 36, 32, 18, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(hx, hy, 32, 28, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    for (let f = 0; f < 5; f++) {
+      const fAngle = -1.4 + (f * 0.6);
+      const fx = hx + Math.cos(fAngle) * 36;
+      const fy = hy + Math.sin(fAngle) * 36;
+      ctx.beginPath();
+      ctx.ellipse(fx, fy, 13, 8, fAngle, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = '#ab47bc';
+    ctx.beginPath();
+    ctx.ellipse(hx - 14, hy + 10, 36, 26, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(hx - 24, hy + 16, 8, 0, Math.PI * 2);
+    ctx.arc(hx - 8, hy + 24, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawFirstPersonPOV() {
+    ctx.save();
+
+    const mopHeadX = playerMop.x;
+    const mopHeadY = highwayBottomY + 10;
+
+    const highGripX = mopHeadX + 170;
+    const highGripY = 380;
+
+    const lowGripX = mopHeadX - 70;
+    const lowGripY = 510;
+
+    const poleAngle = Math.atan2(mopHeadY - highGripY, mopHeadX - highGripX);
+
+    const foamGrad = ctx.createRadialGradient(mopHeadX, mopHeadY, 10, mopHeadX, mopHeadY, 80);
+    foamGrad.addColorStop(0, 'rgba(238, 215, 255, 0.95)');
+    foamGrad.addColorStop(0.5, 'rgba(186, 104, 200, 0.7)');
+    foamGrad.addColorStop(1, 'rgba(142, 36, 170, 0)');
+    ctx.fillStyle = foamGrad;
+    ctx.beginPath();
+    ctx.ellipse(mopHeadX, mopHeadY, 85, 32, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    const strips = 14;
+    for (let i = 0; i < strips; i++) {
+      const ang = (i / strips) * Math.PI - 0.2;
+      const len = 38 + Math.sin(i * 1.5) * 10;
+      const sx = mopHeadX + Math.cos(ang) * len;
+      const sy = mopHeadY + Math.sin(ang) * (len * 0.42);
+
+      ctx.strokeStyle = i % 2 === 0 ? '#b39ddb' : '#9575cd';
+      ctx.lineWidth = 8;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(mopHeadX, mopHeadY - 8);
+      ctx.quadraticCurveTo(mopHeadX + Math.cos(ang) * (len * 0.5), mopHeadY + 4, sx, sy);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = '#0288d1';
+    ctx.beginPath();
+    ctx.ellipse(mopHeadX, mopHeadY - 10, 20, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    const poleTopX = highGripX - Math.cos(poleAngle) * 120;
+    const poleTopY = highGripY - Math.sin(poleAngle) * 120;
+
+    ctx.strokeStyle = '#0277bd';
+    ctx.lineWidth = 16;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(poleTopX, poleTopY);
+    ctx.lineTo(mopHeadX, mopHeadY - 10);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#9c27b0';
+    ctx.lineWidth = 48;
+    ctx.beginPath();
+    ctx.moveTo(-40, canvas.height + 40);
+    ctx.quadraticCurveTo(lowGripX - 160, lowGripY + 140, lowGripX - 30, lowGripY + 10);
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(lowGripX - 35, lowGripY + 15, 28, 16, 0.45, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(lowGripX, lowGripY, 24, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#9c27b0';
+    ctx.lineWidth = 54;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width + 50, canvas.height - 20);
+    ctx.quadraticCurveTo(canvas.width - 70, highGripY + 160, highGripX + 30, highGripY + 25);
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(highGripX + 35, highGripY + 30, 32, 18, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(highGripX, highGripY, 26, 0, Math.PI * 2);
+    ctx.fill();
+
+    for (let f = 0; f < 4; f++) {
+      ctx.beginPath();
+      ctx.ellipse(highGripX - 10, highGripY - 20 + f * 13, 13, 8, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.ellipse(highGripX + 14, highGripY - 12, 12, 9, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawParticlesAndFoam() {
+    foamSplashes.forEach(f => {
+      ctx.save();
+      ctx.globalAlpha = f.alpha;
+      ctx.fillStyle = f.color;
+      ctx.beginPath();
+      ctx.ellipse(f.x, f.y, f.radius * 1.2, f.radius * 0.45, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+
+    particles.forEach(p => {
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  function gameLoop(now) {
+    const dt = Math.min(0.1, (now - lastTime) / 1000);
+    lastTime = now;
+
+    update(dt);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (gameState === 'BONUS') {
+      drawBonusRopesStage();
+      drawParticlesAndFoam();
+    } else {
+      drawStadiumEnvironment();
+      drawCleanCanvasHighway();
+      drawHighwayNotes();
+      drawParticlesAndFoam();
+      drawFirstPersonPOV();
+    }
+
+    requestAnimationFrame(gameLoop);
+  }
+
+  // AUTO-INITIALIZE CAMERA FROM MENU ON LOAD
+  window.addEventListener('load', () => {
+    selectControlMode('cam');
+    requestAnimationFrame(gameLoop);
+  });
+})();
+</script>
+
+</body></html>

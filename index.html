@@ -11,7 +11,16 @@
   #hud-layer { position: absolute; inset: 0; z-index: 10; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 16px 22px; }
   .hud-top { display: flex; justify-content: space-between; align-items: flex-start; }
   .brand-badge { background: linear-gradient(135deg, rgba(74,20,140,.95), rgba(123,31,162,.95)); border: 2px solid #ffd54f; border-radius: 14px; padding: 8px 18px; box-shadow: 0 4px 20px rgba(0,0,0,.6); display: flex; align-items: center; gap: 12px; }
-  .brand-rainbow { font-weight: 900; font-size: 26px; font-style: italic; background: linear-gradient(90deg,#ff1744,#ffea00,#00e676,#00e5ff,#d500f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; }
+   .brand-rainbow {
+  font-weight: 900;
+  font-size: 26px;
+  font-style: italic;
+  background: linear-gradient(90deg, #ff1744, #ffea00, #00e676, #00e5ff, #d500f9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+}
   .lives-container { display: flex; gap: 6px; margin-top: 8px; background: rgba(22,5,36,.85); border: 2px solid #ffd54f; padding: 6px 14px; border-radius: 20px; align-items: center; width: fit-content; }
   .life-icon { font-size: 22px; filter: drop-shadow(0 2px 4px rgba(0,0,0,.6)); transition: transform .2s, opacity .2s; }
   .life-icon.lost { opacity: .25; filter: grayscale(1); transform: scale(.85); }
@@ -37,7 +46,16 @@
   #countdown-overlay { position: absolute; inset: 0; background: rgba(10,2,18,.85); backdrop-filter: blur(8px); z-index: 40; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
   #countdown-number { font-size: 140px; font-weight: 900; font-style: italic; color: #ffd54f; text-shadow: 0 0 40px #e040fb, 0 8px 16px rgba(0,0,0,.9); transform: scale(.5); opacity: 0; transition: all .35s cubic-bezier(.175,.885,.32,1.275); letter-spacing: 2px; }
   #countdown-number.show { transform: scale(1.15); opacity: 1; }
-  #countdown-number.trapea { font-size: 110px; background: linear-gradient(90deg,#ff1744,#ffea00,#00e676,#00e5ff,#d500f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: none; filter: drop-shadow(0 0 30px #e040fb); }
+/* En la línea 50 */
+#countdown-number.trapea {
+  font-size: 110px;
+  background: linear-gradient(90deg, #ff1744, #ffea00, #00e676, #00e5ff, #d500f9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 0 30px #e040fb);
+}
   .countdown-sub { font-size: 20px; font-weight: 800; color: #f3e5f5; margin-top: 15px; text-transform: uppercase; letter-spacing: 2px; }
   .hud-bottom { display: flex; justify-content: space-between; align-items: flex-end; pointer-events: auto; }
   .lane-key-hints { display: flex; gap: 12px; background: rgba(22,5,36,.88); padding: 7px 16px; border-radius: 20px; border: 1px solid #9c27b0; font-size: 12px; font-weight: bold; }

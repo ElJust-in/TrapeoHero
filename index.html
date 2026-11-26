@@ -1039,14 +1039,14 @@
       ctx.drawImage(images.bonusBg, bgX, bgY, bgW, bgH);
     }
 
-    // Manchas de lodo en las cuerdas
-    BONUS_ROPES.forEach(rope => {
-      rope.dirtSegments.forEach(seg => {
-        if (!seg.cleaned) {
-          drawSprite(images.lodo, seg.x, rope.y, 38, false, '#4e342e');
-        }
-      });
-    });
+ // Manchas de lodo en las cuerdas
+BONUS_ROPES.forEach(rope => {
+  rope.dirtSegments.forEach(seg => {
+    if (!seg.cleaned) {
+      drawSprite(images.lodo, seg.x, rope.y, 38 * 2, false, '#4e342e');
+    }
+  });
+});
 
     // Brazo fijo con botella reducido 80% (150px) en la esquina inferior izquierda
     const fixedArmWidth = 150;
